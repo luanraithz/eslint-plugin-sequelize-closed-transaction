@@ -1,0 +1,14 @@
+{
+  "name": "eslint-plugin-sequelize-closed-transaction",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "test:w": "jest --watch"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "eslint": "^8.29.0",
+    "jest": "^29.3.1"
+  }
+}
