@@ -81,5 +81,27 @@ async function noNesting() {
 }`,
             errors: [{ message: "Transaction in this context is not closed at some path." }]
         },
+        {
+            code: `
+const obj = {
+  func: async function () {
+    const transaction = await sequelize.transaction();
+
+    return await 1
+  }
+}`,
+            errors: [{ message: "Transaction in this context is not closed at some path." }]
+        },
+        {
+            code: `
+const obj = {
+  arrow: () => {
+    const transaction = await sequelize.transaction();
+
+    return await 1
+  }
+}`,
+            errors: [{ message: "Transaction in this context is not closed at some path." }]
+        },
     ]
 });
