@@ -214,12 +214,13 @@ module.exports = {
                 return false
               })
             const idsWithTransactons = segmentsWithTransaction.map(s => s.id)
+            const endingOperations = ["rollback", "commit"]
             for (const seg of finalPathsWithinTransactionScope) {
               // The final segmentation must have (or have a parent that) called some ending operation in the transaction
               function traverse(seg) {
                 const expressions = expressionsMap.get(seg)
-                if (expressions && expressions.some(exp => exp.property?.name === "rollback")) {
-                  return expressions.find(exp => exp.property?.name === "rollback")
+                if (expressions && expressions.some(exp =>  endingOperations.includes((exp.property || {}).name))) {
+                  return expressions.find(exp => endingOperations.includes((exp.property || {}).name))
                 }
                 if (idsWithTransactons.includes(seg.id)) {
                   return false
