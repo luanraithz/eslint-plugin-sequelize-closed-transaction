@@ -55,6 +55,20 @@ async function ifElse() {
     await transaction.rollback()
   }
 }`,
+      },
+      {
+            code: `
+const obj = {
+  property: async () => {
+    const transaction = await sequelize.transaction();
+    if (123) {
+      await transaction.rollback()
+      return bla
+    } else {
+      await transaction.rollback()
+    }
+  }
+}`,
       }
     ],
     invalid: [
@@ -95,7 +109,7 @@ const obj = {
         {
             code: `
 const obj = {
-  arrow: () => {
+  arrow: async () => {
     const transaction = await sequelize.transaction();
 
     return await 1
