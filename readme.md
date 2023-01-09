@@ -5,6 +5,8 @@ Check if your transactions are closed at every path
 
 > `npm install --saved-dev eslint-plugin-sequelize-transaction`
 
+Most of the code here is from [rules of hooks source code](https://github.com/facebook/react/blob/main/packages/eslint-plugin-react-hooks/src/RulesOfHooks.js)
+
 
 ## Valid code examples ✅ 
 ```javascript
