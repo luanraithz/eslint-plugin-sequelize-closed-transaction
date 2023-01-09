@@ -33,6 +33,20 @@ async function withTryAndFinally() {
         },
         {
             code: `
+async function lateStart() {
+  let transaction;
+  {
+    if (Math.random()) {
+      transaction = await sequelize.transaction();
+      await transaction.rollback()
+    } else {
+      return 1
+    }
+  }
+}`,
+        },
+        {
+            code: `
 async function nested() {
   const transaction = await sequelize.transaction();
   {
@@ -117,5 +131,23 @@ const obj = {
 }`,
             errors: [{ message: "Transaction in this context is not closed at some path." }]
         },
+        /**
+        {
+            // TODO
+            code: `
+const obj = {
+  arrowWithShadowing: async () => {
+    const transaction = await sequelize.transaction();
+    {
+      const transaction = {}
+      await transaction.rollback()
+    }
+
+    return await 1
+  }
+}`,
+            errors: [{ message: "Transaction in this context is not closed at some path." }]
+        },
+         */
     ]
 });

@@ -5,11 +5,9 @@ module.exports = {
         const codePathExpressionMapStack = []
         const codePathSegmentStack = []
         return {
-          // Maintain code segment path stack as we traverse.
           onCodePathSegmentStart: segment => codePathSegmentStack.push(segment),
           onCodePathSegmentEnd: () => codePathSegmentStack.pop(),
 
-          // Maintain code path stack as we traverse.
           onCodePathStart: () => codePathExpressionMapStack.push(new Map()),
           onCodePathEnd(codePath, codePathNode) {
             const expressionsMap = codePathExpressionMapStack.pop();
@@ -65,29 +63,6 @@ module.exports = {
 
             countPathsFromStart.cache = new Map();
             countPathsToEnd.cache = new Map();
-            // shortestPathLengthToStart.cache = new Map();
-
-            /**
-             * Count the number of code paths from this segment to the end of the
-             * function. For example:
-             *
-             * ```js
-             * function MyComponent() {
-             *   // Segment 1
-             *   if (condition) {
-             *     // Segment 2
-             *   } else {
-             *     // Segment 3
-             *   }
-             * }
-             * ```
-             *
-             * Segments 2 and 3 have one path to the end of `MyComponent` and
-             * segment 1 has two paths to the end of `MyComponent` since we could
-             * either take the path of segment 1 or segment 2.
-             *
-             * Populates `cyclic` with cyclic segments.
-             */
 
             function countPathsToEnd(segment, pathHistory) {
               const { cache } = countPathsToEnd;
@@ -130,68 +105,12 @@ module.exports = {
               cache.set(segment.id, paths);
               return paths;
             }
-            // function shortestPathLengthToStart(segment) {
-            //   const { cache } = shortestPathLengthToStart;
-            //   let length = cache.get(segment.id);
-
-            //   // If `length` is null then we found a cycle! Return infinity since
-            //   // the shortest path is definitely not the one where we looped.
-            //   if (length === null) {
-            //     return Infinity;
-            //   }
-
-            //   // We have a cached `length`. Return it.
-            //   if (length !== undefined) {
-            //     return length;
-            //   }
-
-            //   // Compute `length` and cache it. Guarding against cycles.
-            //   cache.set(segment.id, null);
-            //   if (segment.prevSegments.length === 0) {
-            //     length = 1;
-            //   } else {
-            //     length = Infinity;
-            //     for (const prevSegment of segment.prevSegments) {
-            //       const prevLength = shortestPathLengthToStart(prevSegment);
-            //       if (prevLength < length) {
-            //         length = prevLength;
-            //       }
-            //     }
-            //     length += 1;
-            //   }
-            //   cache.set(segment.id, length);
-            //   return length;
-            // }
-            // if not.
-            // let shortestFinalPathLength = Infinity;
-            // for (const finalSegment of codePath.finalSegments) {
-            //   if (!finalSegment.reachable) {
-            //     continue;
-            //   }
-            //   const length = shortestPathLengthToStart(finalSegment);
-            //   if (length < shortestFinalPathLength) {
-            //     shortestFinalPathLength = length;
-            //   }
-            // }
-
             const segmentsWithTransaction = []
             for (const [segment, expressions] of expressionsMap) {
               if (!segment.reachable) {
                 continue;
               }
 
-              // If there are any final segments with a shorter path to start then
-              // we possibly have an early return.
-              //
-              // If our segment is a final segment itself then siblings could
-              // possibly be early returns.
-
-              // Count all the paths from the start of our code path to the end of
-              // our code path that go _through_ this segment. The critical piece
-              // of this is _through_. If we just call `countPathsToEnd(segment)`
-              // then we neglect that we may have gone through multiple paths to get
-              // to this point! Consider:
-              //
               for (const hook of expressions) {
                 if (hook.type === "MemberExpression"
                   && hook.object.name === "sequelize"
@@ -235,24 +154,6 @@ module.exports = {
               }
 
             }
-            /*
-            for (const seg of segmentsWithTransaction) {
-
-              seg.allNextSegments
-                  // .filter(seg => codePath.finalSegments.includes(seg))
-                  .forEach(seg1 => {
-                    // console.log("wtf", seg)
-                    seg1.hook = seg.hook
-                    segmentsWithTransaction.push(seg1)
-                    const map = expressionsMap.get(seg1)
-                    if (codePath.finalSegments.includes(seg1) && (!map || !map.some(exp => exp.property?.name === "rollback"))) {
-                      context.report({ node: seg1.hook, message: `Transaction opened at line ${seg.hook?.loc.start.line} is not closed at some path.`})
-                    }
-                  })
-
-            }
-    */
-
 
           },
           CallExpression: (node) => {
@@ -265,15 +166,6 @@ module.exports = {
             }
             expressions.push(node.callee);
           },
-          Identifier: node => {
-
-          },
-          FunctionDeclaration: (node) => {
-            // if (!isInsideTransactioContext(node)) {
-
-            // }
-            // console.log("function")
-          }
         }
       },
     },
