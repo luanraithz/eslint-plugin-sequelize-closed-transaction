@@ -112,9 +112,13 @@ module.exports = {
               }
 
               for (const hook of expressions) {
-                if (hook.type === "MemberExpression"
-                  && hook.object.name === "sequelize"
-                  && hook.property.name === "transaction") {
+                if (
+                  hook.type === "MemberExpression" &&
+                  (hook.object.name === "sequelize" ||
+                    (hook.object.type === "MemberExpression" &&
+                      hook.object.property.name === "sequelize")) &&
+                  hook.property.name === "transaction"
+                ) {
                   segment.hook = hook
                   segmentsWithTransaction.push(segment)
                 }
